@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Rsync-GUI</title>
+        <link
+            rel="icon"
+            type="image/x-icon"
+            href="/static/icon/Rsync-GUI.ico"
+        />
+        <link rel="stylesheet" href="/static/css/style.css" />
+    </head>
+    <body>
+        <header class="app-header">
+            <div class="header-inner">
+                <div class="app-title">Rsync-GUI<span>备份任务管理</span></div>
+                <div style="display: flex; align-items: center; gap: 12px">
+                    <button class="btn-secondary" onclick="exportAllTasks()">
+                        备份
+                    </button>
+                    <button class="btn-secondary" onclick="importAllTasks()">
+                        还原
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content main-split">
+            <!-- 左侧：本地任务 -->
+            <div class="split-panel">
+                <div class="panel-bar">
+                    <span class="section-label">本地任务</span>
+                    <button class="btn-primary" onclick="newTask()">
+                        ＋ 新建
+                    </button>
+                </div>
+                <div id="empty-state" class="empty-state">
+                    <p>还没有本地任务</p>
+                </div>
+                <div id="task-list" class="task-list"></div>
+            </div>
+
+            <!-- 右侧：远程 + 网盘 -->
+            <div class="split-panel">
+                <div class="panel-bar">
+                    <span class="section-label">远程任务</span>
+                    <button class="btn-primary" onclick="newRemoteTask()">
+                        ＋ 新建
+                    </button>
+                </div>
+                <div id="remote-empty-state" class="empty-state">
+                    <p>还没有远程任务</p>
+                </div>
+                <div id="remote-task-list" class="task-list"></div>
+
+                <div class="panel-bar" style="margin-top: 24px">
+                    <span class="section-label">网盘任务</span>
+                    <button class="btn-primary" onclick="newRcloneTask()">
+                        ＋ 新建
+                    </button>
+                </div>
+                <div id="rclone-empty-state" class="empty-state">
+                    <p>还没有网盘任务</p>
+                </div>
+                <div id="rclone-task-list" class="task-list"></div>
+            </div>
+        </main>
+
+        <!-- 本地任务弹窗 -->
+        <div id="modal-overlay" class="modal-overlay" style="display: none">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 id="modal-title">新建任务</h2>
+                    <button class="modal-close" onclick="closeModal()">
+                        &times;
+                    </button>
+                </div>
+                <form id="task-form">
+                    <input type="hidden" id="task-id" />
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="name">任务名称</label>
+                            <input
+                                type="text"
+                                id="name"
+                                placeholder="例如：每日网站备份"
+                                required
+                            />
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="source"
+                                    >源目录
+                                    <span
+                                        class="tip-icon"
+                                        title="末尾加 /（如 /dir/）：将 dir 下的内容同步到目标&#10;不加 /（如 /dir）：将 dir 本身同步到目标下"
+                                        >ⓘ</span
+                                    >
+                                </label>
+                                <input
+                                    type="text"
+                                    id="source"
+                                    placeholder="/path/to/source"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="targets"
+                                    >目标目录
+                                    <span
+                                        class="tip-icon"
+                                        title="每行一个，支持多个目标"
+                                        >ⓘ</span
+                                    >
+                                </label>
+                                <textarea
+                                    id="targets"
+                                    rows="2"
+                                    placeholder="/path/to/target1&#10;/path/to/target2"
+                                    required
+                                ></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                >rsync 选项
+                                <span
+                                    class="tip-icon"
+                                    title="固定启用归档模式&#10;应先使用演习模式，确认无误再正式运行"
+                                    >ⓘ</span
+                                >
+                            </label>
+                            <div class="checkbox-group">
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="verbose"
+                                        checked
+                                    />详细输出</label
+                                >
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="compress"
+                                        checked
+                                    />压缩传输</label
+                                >
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="preserve_times"
+                                    />保留修改时间</label
+                                >
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="delete_mode"
+                                        checked
+                                    />同步删除文件</label
+                                >
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="dry_run"
+                                        checked
+                                    />演习模式</label
+                                >
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="excludes"
+                                >排除规则（可选）
+                                <span class="tip-icon" title="每行一条">ⓘ</span>
+                            </label>
+                            <textarea id="excludes" rows="3"></textarea>
+                        </div>
+                        <div class="form-row form-row-3col">
+                            <div class="form-group">
+                                <label for="timeout">超时时间（秒）</label>
+                                <input
+                                    type="number"
+                                    id="timeout"
+                                    min="0"
+                                    value="0"
+                                    placeholder="0 表示不限"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="bandwidth_limit">带宽限制</label>
+                                <input
+                                    type="text"
+                                    id="bandwidth_limit"
+                                    placeholder="如 10m, 100k"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="cron_expr"
+                                    >定时表达式（cron）
+                                    <span
+                                        class="tip-icon"
+                                        title="留空则不启用定时"
+                                        >ⓘ</span
+                                    >
+                                </label>
+                                <input
+                                    type="text"
+                                    id="cron_expr"
+                                    placeholder="15 3 * * *（每天 03:15）"
+                                />
+                            </div>
+                        </div>
+                        <div id="form-errors" class="form-error"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn-secondary"
+                            onclick="closeModal()"
+                        >
+                            取消
+                        </button>
+                        <button type="submit" class="btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 远程任务弹窗 -->
+        <div
+            id="remote-modal-overlay"
+            class="modal-overlay"
+            style="display: none"
+        >
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 id="remote-modal-title">新建远程任务</h2>
+                    <button class="modal-close" onclick="closeRemoteModal()">
+                        &times;
+                    </button>
+                </div>
+                <form id="remote-task-form">
+                    <input type="hidden" id="remote-task-id" />
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="remote-name">任务名称</label>
+                            <input
+                                type="text"
+                                id="remote-name"
+                                placeholder="例如：同步远程 VPS 数据"
+                                required
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="ssh_key">SSH 私钥路径（可选）</label>
+                            <input
+                                type="text"
+                                id="ssh_key"
+                                placeholder="留空则使用 ~/.ssh/id_ed25519"
+                            />
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="remote-source"
+                                    >源目录
+                                    <span
+                                        class="tip-icon"
+                                        title="本地用 /path，远程用 user@host:/path&#10;端口可选 user@host:2222:/path"
+                                        >ⓘ</span
+                                    >
+                                </label>
+                                <input
+                                    type="text"
+                                    id="remote-source"
+                                    placeholder="user@host:/path/to/source/"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="remote-targets"
+                                    >目标目录
+                                    <span
+                                        class="tip-icon"
+                                        title="每行一个&#10;本地用 /path，远程用 user@host:/path/to/target"
+                                        >ⓘ</span
+                                    >
+                                </label>
+                                <textarea
+                                    id="remote-targets"
+                                    rows="2"
+                                    placeholder="/path/to/target1/&#10;user@host:/path/to/target2/"
+                                    required
+                                ></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                >rsync 选项
+                                <span
+                                    class="tip-icon"
+                                    title="固定启用归档模式&#10;应先使用演习模式，确认无误再正式运行"
+                                    >ⓘ</span
+                                >
+                            </label>
+                            <div class="checkbox-group">
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="remote-verbose"
+                                        checked
+                                    />详细输出</label
+                                >
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="remote-compress"
+                                        checked
+                                    />压缩传输</label
+                                >
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="remote-preserve_times"
+                                    />保留修改时间</label
+                                >
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="remote-delete_mode"
+                                        checked
+                                    />同步删除文件</label
+                                >
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="remote-dry_run"
+                                        checked
+                                    />演习模式</label
+                                >
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="remote-excludes"
+                                >排除规则（可选）
+                                <span class="tip-icon" title="每行一条">ⓘ</span>
+                            </label>
+                            <textarea id="remote-excludes" rows="3"></textarea>
+                        </div>
+                        <div class="form-row form-row-3col">
+                            <div class="form-group">
+                                <label for="remote-timeout"
+                                    >超时时间（秒）</label
+                                >
+                                <input
+                                    type="number"
+                                    id="remote-timeout"
+                                    min="0"
+                                    value="0"
+                                    placeholder="0 表示不限"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="remote-bandwidth_limit"
+                                    >带宽限制</label
+                                >
+                                <input
+                                    type="text"
+                                    id="remote-bandwidth_limit"
+                                    placeholder="如 10m, 100k"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="remote-cron_expr"
+                                    >定时表达式（cron）
+                                    <span
+                                        class="tip-icon"
+                                        title="留空则不启用定时"
+                                        >ⓘ</span
+                                    >
+                                </label>
+                                <input
+                                    type="text"
+                                    id="remote-cron_expr"
+                                    placeholder="15 3 * * *（每天 03:15）"
+                                />
+                            </div>
+                        </div>
+                        <div id="remote-form-errors" class="form-error"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn-secondary"
+                            onclick="closeRemoteModal()"
+                        >
+                            取消
+                        </button>
+                        <button type="submit" class="btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- rclone 网盘任务弹窗 -->
+        <div
+            id="rclone-modal-overlay"
+            class="modal-overlay"
+            style="display: none"
+        >
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 id="rclone-modal-title">新建网盘任务</h2>
+                    <button class="modal-close" onclick="closeRcloneModal()">
+                        &times;
+                    </button>
+                </div>
+                <form id="rclone-task-form">
+                    <input type="hidden" id="rclone-task-id" />
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="rclone-name">任务名称</label>
+                            <input
+                                type="text"
+                                id="rclone-name"
+                                placeholder="例如：网盘同步照片"
+                                required
+                            />
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="rclone-source"
+                                    >源目录
+                                    <span
+                                        class="tip-icon"
+                                        title="rclone remote:path 或 /local/path"
+                                        >ⓘ</span
+                                    >
+                                </label>
+                                <input
+                                    type="text"
+                                    id="rclone-source"
+                                    placeholder="seafdav:资料"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="rclone-targets"
+                                    >目标目录
+                                    <span class="tip-icon" title="每行一个"
+                                        >ⓘ</span
+                                    >
+                                </label>
+                                <textarea
+                                    id="rclone-targets"
+                                    rows="2"
+                                    placeholder="/path/to/target1/&#10;od-photos:backup/"
+                                    required
+                                ></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>rclone 选项</label>
+                            <div class="checkbox-group">
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="rclone-dry_run"
+                                        checked
+                                    />演习模式</label
+                                >
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="rclone-excludes"
+                                >排除规则（可选）
+                                <span class="tip-icon" title="每行一条">ⓘ</span>
+                            </label>
+                            <textarea id="rclone-excludes" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="rclone-cron_expr"
+                                >定时表达式（cron）
+                                <span class="tip-icon" title="留空则不启用定时"
+                                    >ⓘ</span
+                                >
+                            </label>
+                            <input
+                                type="text"
+                                id="rclone-cron_expr"
+                                placeholder="15 3 * * *（每天 03:15）"
+                            />
+                        </div>
+                        <div id="rclone-form-errors" class="form-error"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn-secondary"
+                            onclick="closeRcloneModal()"
+                        >
+                            取消
+                        </button>
+                        <button type="submit" class="btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 日志弹窗 -->
+        <div
+            id="log-modal-overlay"
+            class="modal-overlay log-modal-overlay"
+            style="display: none"
+        >
+            <div class="modal log-modal">
+                <div class="modal-header">
+                    <h2 id="log-modal-title">执行日志</h2>
+                    <div style="display: flex; align-items: center; gap: 8px">
+                        <button
+                            id="btn-stop-log"
+                            class="btn-danger"
+                            style="
+                                display: none;
+                                padding: 4px 12px;
+                                font-size: 12px;
+                            "
+                        >
+                            ■ 停止
+                        </button>
+                        <button
+                            id="btn-clear-log"
+                            class="btn-secondary"
+                            style="padding: 4px 12px; font-size: 12px"
+                        >
+                            清空
+                        </button>
+                        <button class="modal-close" onclick="closeLogModal()">
+                            &times;
+                        </button>
+                    </div>
+                </div>
+                <div id="log-modal-body" class="log-modal-body">
+                    选择任务查看日志
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+        <script src="/static/js/utils.js"></script>
+        <script src="/static/js/log.js"></script>
+        <script src="/static/js/backup.js"></script>
+        <script src="/static/js/task-card.js"></script>
+        <script src="/static/js/local.js"></script>
+        <script src="/static/js/remote.js"></script>
+        <script src="/static/js/rclone.js"></script>
+        <script src="/static/js/app.js"></script>
+    </body>
+</html>

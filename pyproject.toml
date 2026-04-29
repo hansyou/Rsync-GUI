@@ -1,0 +1,12 @@
+[project]
+name = "rsync-gui"
+version = "0.1.0"
+description = "A simple web GUI for rsync backup tasks"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.0",
+    "flask-socketio>=5.3",
+    "apscheduler>=3.10",
+    "pyinstaller>=6.20.0",
+]

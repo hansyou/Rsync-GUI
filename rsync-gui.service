@@ -1,0 +1,12 @@
+[Unit]
+Description=Rsync-GUI Backup Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/path/to/rsync-gui/
+ExecStart=/path/to/rsync-gui/rsync-gui
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

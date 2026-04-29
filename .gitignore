@@ -1,0 +1,19 @@
+Rsync-GUI/.gitignore
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+rsync-gui.spec
+
+# Virtual environments
+.venv
+
+# Runtime data (auto-created)
+data/
+
+# OS files
+.DS_Store
+Thumbs.db

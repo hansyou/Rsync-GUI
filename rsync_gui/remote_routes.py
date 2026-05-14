@@ -121,6 +121,21 @@ def api_clone_task(task_id):
     return jsonify({"id": new_id}), 201
 
 
+@remote_bp.route("/api/remote/reorder", methods=["PUT"])
+def api_reorder_remote_tasks():
+    """更新远程任务排序"""
+    data = request.get_json()
+    if not data or not isinstance(data, list):
+        return jsonify({"error": "需要提供任务 ID 数组"}), 400
+    with models.get_connection() as conn:
+        for i, tid in enumerate(data):
+            conn.execute(
+                "UPDATE remote_tasks SET sort_order = ? WHERE id = ?",
+                (float(i), tid),
+            )
+    return jsonify({"ok": True})
+
+
 @remote_bp.route("/api/remote/<int:task_id>/status")
 def api_task_status(task_id):
     log = task_logs.get(_log_key(task_id, remote=True))

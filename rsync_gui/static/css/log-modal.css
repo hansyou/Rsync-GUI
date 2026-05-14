@@ -1,0 +1,37 @@
+/* Rsync-GUI 日志弹窗 */
+
+/* ===== Log Modal ===== */
+
+.log-modal-overlay {
+    z-index: 200;
+}
+
+.log-modal {
+    width: 900px;
+    max-width: calc(100vw - 48px);
+    max-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+}
+
+.log-modal .modal-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.log-modal-body {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 16px 20px;
+    font-family:
+        "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    max-height: 60vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    flex: 1;
+    min-height: 200px;
+}

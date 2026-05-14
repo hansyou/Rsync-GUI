@@ -10,11 +10,18 @@
             href="/static/icon/Rsync-GUI.ico"
         />
         <link rel="stylesheet" href="/static/css/style.css" />
+        <link rel="stylesheet" href="/static/css/task-card.css" />
+        <link rel="stylesheet" href="/static/css/modal-form.css" />
+        <link rel="stylesheet" href="/static/css/log-modal.css" />
+        <link rel="stylesheet" href="/static/css/misc.css" />
     </head>
     <body>
         <header class="app-header">
             <div class="header-inner">
-                <div class="app-title">Rsync-GUI<span>备份任务管理</span></div>
+                <div class="app-title">
+                    Rsync-GUI<span class="app-version">v0.1.2</span
+                    ><span>备份任务管理</span>
+                </div>
                 <div style="display: flex; align-items: center; gap: 12px">
                     <button class="btn-secondary" onclick="exportAllTasks()">
                         备份
@@ -36,7 +43,7 @@
                     </button>
                 </div>
                 <div id="empty-state" class="empty-state">
-                    <p>还没有本地任务</p>
+                    <p></p>还没有本地任务</p>
                 </div>
                 <div id="task-list" class="task-list"></div>
             </div>
@@ -50,7 +57,7 @@
                     </button>
                 </div>
                 <div id="remote-empty-state" class="empty-state">
-                    <p>还没有远程任务</p>
+                    <p></p>还没有远程任务</p>
                 </div>
                 <div id="remote-task-list" class="task-list"></div>
 
@@ -61,7 +68,7 @@
                     </button>
                 </div>
                 <div id="rclone-empty-state" class="empty-state">
-                    <p>还没有网盘任务</p>
+                    <p>还没有</p>网盘任务</p>
                 </div>
                 <div id="rclone-task-list" class="task-list"></div>
             </div>
@@ -459,7 +466,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>rclone 选项</label>
+                            <label>r</label>clone 选项</label>
                             <div class="checkbox-group">
                                 <label
                                     ><input
@@ -546,6 +553,7 @@
         </div>
 
         <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
         <script src="/static/js/utils.js"></script>
         <script src="/static/js/log.js"></script>
         <script src="/static/js/backup.js"></script>

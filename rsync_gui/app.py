@@ -7,10 +7,12 @@ import sys
 from flask import Flask
 from flask_socketio import SocketIO
 
-from .models import init_db
+from .models import init_db, migrate_db
 from .rclone_models import init_db as init_rclone_db
+from .rclone_models import migrate_db as migrate_rclone_db
 from .rclone_routes import rclone_bp
 from .remote_models import init_db as init_remote_db
+from .remote_models import migrate_db as migrate_remote_db
 from .remote_routes import remote_bp
 from .routes import bp
 from .scheduler import init_scheduler, stop_scheduler
@@ -43,6 +45,11 @@ def create_app():
     init_db()
     init_remote_db()
     init_rclone_db()
+
+    # 执行数据库迁移
+    migrate_db()
+    migrate_remote_db()
+    migrate_rclone_db()
 
     # 注册蓝图
     app.register_blueprint(bp)

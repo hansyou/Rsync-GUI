@@ -17,6 +17,11 @@ var remoteEmptyStateEl = null;
 var rcloneTaskListEl = null;
 var rcloneEmptyStateEl = null;
 
+// ===== Sortable instances =====
+var sortableLocal = null;
+var sortableRemote = null;
+var sortableRclone = null;
+
 // ===== SocketIO =====
 function connectSocket() {
     socket = io();
@@ -62,6 +67,7 @@ function renderTasks() {
                 return renderTaskCard(t, false, false);
             })
             .join("");
+        initSortable(taskListEl, sortableLocal, "/api/tasks/reorder");
     }
 }
 
@@ -76,6 +82,7 @@ function renderRemoteTasks() {
                 return renderTaskCard(t, true, false);
             })
             .join("");
+        initSortable(remoteTaskListEl, sortableRemote, "/api/remote/reorder");
     }
 }
 
@@ -90,7 +97,41 @@ function renderRcloneTasks() {
                 return renderTaskCard(t, false, true);
             })
             .join("");
+        initSortable(rcloneTaskListEl, sortableRclone, "/api/rclone/reorder");
     }
+}
+
+// ===== Sortable =====
+
+function initSortable(el, instance, reorderUrl) {
+    // Destroy previous instance if exists
+    if (instance) {
+        instance.destroy();
+    }
+    instance = Sortable.create(el, {
+        handle: ".task-drag-handle",
+        animation: 150,
+        ghostClass: "task-card-ghost",
+        dragClass: "task-card-dragging",
+        onEnd: function () {
+            var ids = [];
+            var cards = el.querySelectorAll(".task-card");
+            for (var i = 0; i < cards.length; i++) {
+                ids.push(parseInt(cards[i].getAttribute("data-task-id")));
+            }
+            fetch(reorderUrl, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(ids),
+            }).catch(function (e) {
+                console.error("排序保存失败", e);
+            });
+        },
+    });
+    // Store the instance
+    if (el === taskListEl) sortableLocal = instance;
+    else if (el === remoteTaskListEl) sortableRemote = instance;
+    else if (el === rcloneTaskListEl) sortableRclone = instance;
 }
 
 // ===== Stop (shared) =====

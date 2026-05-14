@@ -1,0 +1,209 @@
+/* Rsync-GUI 任务卡片 */
+
+/* ===== Task List ===== */
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.task-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    transition: box-shadow 0.15s;
+}
+
+.task-card:hover {
+    box-shadow: var(--shadow);
+}
+
+.task-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.task-card-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Drag handle */
+.task-drag-handle {
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: grab;
+    user-select: none;
+    flex-shrink: 0;
+    line-height: 1;
+    letter-spacing: -2px;
+    padding: 2px 4px 2px 0;
+}
+
+.task-drag-handle:active {
+    cursor: grabbing;
+}
+
+.task-drag-handle:hover {
+    color: var(--text-secondary);
+}
+
+/* Sortable ghost / dragging states */
+.task-card-ghost {
+    opacity: 0.4;
+    background: var(--bg-secondary);
+}
+
+.task-card-dragging {
+    box-shadow: var(--shadow-md);
+    opacity: 0.9;
+}
+
+.task-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.task-name:hover {
+    color: var(--primary);
+}
+
+.task-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.task-badge.running {
+    background: #dbeafe;
+    color: var(--primary);
+}
+
+.task-badge.success {
+    background: #dcfce7;
+    color: var(--success);
+}
+
+.task-badge.failed {
+    background: #fef2f2;
+    color: var(--danger);
+}
+
+.task-badge.idle {
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+}
+
+.task-badge.cron {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.task-card-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* ===== "其他" Dropdown ===== */
+
+.task-more-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.task-more-btn {
+    cursor: pointer;
+}
+
+.task-more-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    min-width: 100px;
+    overflow: hidden;
+}
+
+.task-more-item {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s;
+}
+
+.task-more-item:hover {
+    background: var(--bg-secondary);
+}
+
+.task-more-item-danger {
+    color: var(--danger);
+}
+
+.task-more-item-danger:hover {
+    background: #fef2f2;
+}
+
+/* ===== Expanded Meta ===== */
+
+.task-card-meta {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.task-path-row {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.task-path-src {
+    font-family:
+        "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.task-path-arrow {
+    color: var(--primary);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.task-path-dst {
+    font-family:
+        "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--text);
+}

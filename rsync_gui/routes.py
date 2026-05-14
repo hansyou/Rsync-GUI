@@ -162,6 +162,24 @@ def api_clone_task(task_id):
     return jsonify({"id": new_id}), 201
 
 
+@bp.route("/api/tasks/reorder", methods=["PUT"])
+def api_reorder_tasks():
+    """更新任务排序"""
+    from .models import get_connection
+
+    data = request.get_json()
+    if not data or not isinstance(data, list):
+        return jsonify({"error": "需要提供任务 ID 数组"}), 400
+
+    with get_connection() as conn:
+        for i, task_id in enumerate(data):
+            conn.execute(
+                "UPDATE tasks SET sort_order = ? WHERE id = ?",
+                (float(i), task_id),
+            )
+    return jsonify({"ok": True})
+
+
 @bp.route("/api/tasks/<int:task_id>/status")
 def api_task_status(task_id):
     log = task_logs.get(_log_key(task_id))

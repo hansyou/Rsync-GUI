@@ -41,7 +41,7 @@ def stop_task(task_id):
     log["running"] = False
     log["exit_code"] = -9
     log["output"] += "\n[已停止] 任务被用户强制终止\n"
-    save_log_to_disk(task_id, dict(log))
+    save_log_to_disk(task_id, dict(log), rclone=True)
     return True
 
 
@@ -78,12 +78,22 @@ def run_task(task_id, socketio=None):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             _running_procs[key] = proc
 
             for line in iter(proc.stdout.readline, ""):
                 if socketio:
-                    socketio.emit("log_update", {"task_id": task_id, "line": line})
+                    socketio.emit(
+                        "log_update",
+                        {
+                            "task_id": task_id,
+                            "line": line,
+                            "remote": False,
+                            "rclone": True,
+                        },
+                    )
                 log_entry["output"] += line
 
             proc.wait()
@@ -111,12 +121,17 @@ def run_task(task_id, socketio=None):
         log_entry["exit_code"] = 0
 
     log_entry["running"] = False
-    save_log_to_disk(task_id, dict(log_entry))
+    save_log_to_disk(task_id, dict(log_entry), rclone=True)
 
     if socketio:
         socketio.emit(
             "task_complete",
-            {"task_id": task_id, "exit_code": log_entry["exit_code"]},
+            {
+                "task_id": task_id,
+                "exit_code": log_entry["exit_code"],
+                "remote": False,
+                "rclone": True,
+            },
         )
 
 

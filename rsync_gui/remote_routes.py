@@ -98,10 +98,13 @@ def api_run_task(task_id):
 def api_stop_task(task_id):
     if not models.get_task(task_id):
         return jsonify({"error": "任务不存在"}), 404
-    if not stop_task(task_id):
+    if not stop_task(task_id, remote=True):
         return jsonify({"error": "任务未在运行"}), 409
     socketio = current_app.extensions["socketio"]
-    socketio.emit("task_complete", {"task_id": task_id, "exit_code": -9})
+    socketio.emit(
+        "task_complete",
+        {"task_id": task_id, "exit_code": -9, "remote": True, "rclone": False},
+    )
     return jsonify({"ok": True})
 
 
@@ -151,7 +154,7 @@ def api_last_log(task_id):
     log = task_logs.get(_log_key(task_id, remote=True))
     if log and log.get("output"):
         return jsonify({"output": log["output"], "started_at": log.get("started_at")})
-    disk_log = load_log_from_disk(task_id)
+    disk_log = load_log_from_disk(task_id, remote=True)
     if disk_log:
         return jsonify(
             {

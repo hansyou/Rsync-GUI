@@ -23,9 +23,13 @@ def _get_log_dir():
     return os.path.join(_get_data_dir(), "logs")
 
 
-def _get_log_path(task_id):
+def _get_log_path(task_id, remote=False, rclone=False):
     log_dir = _get_log_dir()
     os.makedirs(log_dir, exist_ok=True)
+    if rclone:
+        return os.path.join(log_dir, f"rclone_task_{task_id}.json")
+    if remote:
+        return os.path.join(log_dir, f"remote_task_{task_id}.json")
     return os.path.join(log_dir, f"task_{task_id}.json")
 
 
@@ -42,14 +46,14 @@ def _log_key(task_id, remote=False, rclone=False):
     return f"local_{task_id}"
 
 
-def save_log_to_disk(task_id, log_data):
-    path = _get_log_path(task_id)
+def save_log_to_disk(task_id, log_data, remote=False, rclone=False):
+    path = _get_log_path(task_id, remote=remote, rclone=rclone)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(log_data, f, ensure_ascii=False)
 
 
-def load_log_from_disk(task_id):
-    path = _get_log_path(task_id)
+def load_log_from_disk(task_id, remote=False, rclone=False):
+    path = _get_log_path(task_id, remote=remote, rclone=rclone)
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -108,12 +112,12 @@ def build_rsync_cmd(task, remote=False):
     return cmd
 
 
-def stop_task(task_id):
+def stop_task(task_id, remote=False):
     """
     强制停止正在执行的任务。
     返回 True 表示成功终止，False 表示任务未在运行。
     """
-    key = _log_key(task_id)
+    key = _log_key(task_id, remote=remote)
     log = task_logs.get(key)
     if not log or not log.get("running"):
         return False
@@ -130,7 +134,7 @@ def stop_task(task_id):
     log["running"] = False
     log["exit_code"] = -9
     log["output"] += "\n[已停止] 任务被用户强制终止\n"
-    save_log_to_disk(task_id, dict(log))
+    save_log_to_disk(task_id, dict(log), remote=remote)
     return True
 
 
@@ -176,6 +180,8 @@ def run_task(task_id, socketio=None, remote=False):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
 
             # 记录进程以便强制停止
@@ -183,7 +189,15 @@ def run_task(task_id, socketio=None, remote=False):
 
             for line in iter(proc.stdout.readline, ""):
                 if socketio:
-                    socketio.emit("log_update", {"task_id": task_id, "line": line})
+                    socketio.emit(
+                        "log_update",
+                        {
+                            "task_id": task_id,
+                            "line": line,
+                            "remote": remote,
+                            "rclone": False,
+                        },
+                    )
                 log_entry["output"] += line
 
             proc.wait()
@@ -216,7 +230,7 @@ def run_task(task_id, socketio=None, remote=False):
     log_entry["running"] = False
 
     # 持久化到磁盘
-    save_log_to_disk(task_id, dict(log_entry))
+    save_log_to_disk(task_id, dict(log_entry), remote=remote)
 
     if socketio:
         socketio.emit(
@@ -224,6 +238,8 @@ def run_task(task_id, socketio=None, remote=False):
             {
                 "task_id": task_id,
                 "exit_code": log_entry["exit_code"],
+                "remote": remote,
+                "rclone": False,
             },
         )
 

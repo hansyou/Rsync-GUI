@@ -26,6 +26,8 @@ uv run main.py
 - 手动执行 / 强制停止
 - 保存前预览 rsync 命令
 
+![示例](rsync-gui.png)
+
 ## 打包为单文件
 
 ```bash

@@ -26,10 +26,19 @@ var sortableRclone = null;
 function connectSocket() {
     socket = io();
     socket.on("log_update", function (data) {
-        if (data.task_id === currentTaskId) appendLogLine(data.line);
+        if (
+            data.task_id === currentTaskId &&
+            !!data.remote === currentIsRemote &&
+            !!data.rclone === currentIsRclone
+        )
+            appendLogLine(data.line);
     });
     socket.on("task_complete", function (data) {
-        if (data.task_id === currentTaskId) {
+        if (
+            data.task_id === currentTaskId &&
+            !!data.remote === currentIsRemote &&
+            !!data.rclone === currentIsRclone
+        ) {
             appendLogLine(
                 "\n--- 任务执行完成 (退出码: " + data.exit_code + ") ---\n",
             );

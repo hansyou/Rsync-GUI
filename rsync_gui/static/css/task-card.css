@@ -112,6 +112,16 @@
     color: #92400e;
 }
 
+.task-badge.dry-run {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.task-badge.remote-host {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
 .task-card-right {
     display: flex;
     align-items: center;

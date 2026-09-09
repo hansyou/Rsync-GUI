@@ -45,7 +45,7 @@ function openRemoteModal(title, taskData) {
     } else {
         document.getElementById("remote-task-id").value = "";
         document.getElementById("remote-verbose").checked = true;
-        document.getElementById("remote-compress").checked = true;
+        document.getElementById("remote-compress").checked = false;
         document.getElementById("remote-delete_mode").checked = true;
         document.getElementById("remote-dry_run").checked = true;
         document.getElementById("remote-excludes").value =
@@ -88,7 +88,7 @@ function newRemoteTask() {
 }
 
 function editRemoteTask(taskId) {
-    var task = window.remoteTasks.find(function (t) {
+    var task = remoteTasks.find(function (t) {
         return t.id === taskId;
     });
     if (task) openRemoteModal("编辑远程任务", task);

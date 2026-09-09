@@ -22,20 +22,24 @@ function openModal(title, taskData) {
         document.getElementById("task-id").value = taskData.id || "";
         document.getElementById("name").value = taskData.name || "";
         document.getElementById("source").value = taskData.source || "";
-        document.getElementById("targets").value = formatTargets(taskData.targets || "[]");
+        document.getElementById("targets").value = formatTargets(
+            taskData.targets || "[]",
+        );
         document.getElementById("verbose").checked = taskData.verbose !== 0;
         document.getElementById("compress").checked = !!taskData.compress;
-        document.getElementById("preserve_times").checked = !!taskData.preserve_times;
+        document.getElementById("preserve_times").checked =
+            !!taskData.preserve_times;
         document.getElementById("delete_mode").checked = !!taskData.delete_mode;
         document.getElementById("excludes").value = taskData.excludes || "";
         document.getElementById("timeout").value = taskData.timeout || 0;
-        document.getElementById("bandwidth_limit").value = taskData.bandwidth_limit || "";
+        document.getElementById("bandwidth_limit").value =
+            taskData.bandwidth_limit || "";
         document.getElementById("cron_expr").value = taskData.cron_expr || "";
         document.getElementById("dry_run").checked = taskData.dry_run !== 0;
     } else {
         document.getElementById("task-id").value = "";
         document.getElementById("verbose").checked = true;
-        document.getElementById("compress").checked = true;
+        document.getElementById("compress").checked = false;
         document.getElementById("delete_mode").checked = true;
         document.getElementById("dry_run").checked = true;
         document.getElementById("excludes").value = ".Trash-*\n.DS_Store";
@@ -53,7 +57,9 @@ function buildFormData() {
     return {
         name: document.getElementById("name").value.trim(),
         source: document.getElementById("source").value.trim(),
-        targets: formatTargetsForSubmit(document.getElementById("targets").value),
+        targets: formatTargetsForSubmit(
+            document.getElementById("targets").value,
+        ),
         verbose: document.getElementById("verbose").checked,
         compress: document.getElementById("compress").checked,
         preserve_times: document.getElementById("preserve_times").checked,
@@ -61,15 +67,21 @@ function buildFormData() {
         dry_run: document.getElementById("dry_run").checked,
         excludes: document.getElementById("excludes").value,
         timeout: parseInt(document.getElementById("timeout").value) || 0,
-        bandwidth_limit: document.getElementById("bandwidth_limit").value.trim(),
+        bandwidth_limit: document
+            .getElementById("bandwidth_limit")
+            .value.trim(),
         cron_expr: document.getElementById("cron_expr").value.trim(),
     };
 }
 
-function newTask() { openModal("新建任务", null); }
+function newTask() {
+    openModal("新建任务", null);
+}
 
 function editTask(taskId) {
-    var task = window.tasks.find(function (t) { return t.id === taskId; });
+    var task = window.tasks.find(function (t) {
+        return t.id === taskId;
+    });
     if (task) openModal("编辑任务", task);
 }
 
@@ -78,28 +90,47 @@ function editTask(taskId) {
 async function runTask(taskId) {
     var prefix = "/api/tasks";
     try {
-        var resp = await fetch(prefix + "/" + taskId + "/run", { method: "POST" });
-        if (!resp.ok) { var err = await resp.json(); alert(err.error || "执行失败"); return; }
+        var resp = await fetch(prefix + "/" + taskId + "/run", {
+            method: "POST",
+        });
+        if (!resp.ok) {
+            var err = await resp.json();
+            alert(err.error || "执行失败");
+            return;
+        }
         window.loadTasks();
-    } catch (e) { alert("执行请求失败"); }
+    } catch (e) {
+        alert("执行请求失败");
+    }
 }
 
 async function deleteTask(taskId) {
     if (!confirm("确定要删除这个任务吗？")) return;
     try {
         await fetch("/api/tasks/" + taskId, { method: "DELETE" });
-        if (window.currentTaskId === taskId && !window.currentIsRemote) closeLogModal();
+        if (window.currentTaskId === taskId && !window.currentIsRemote)
+            closeLogModal();
         window.loadTasks();
-    } catch (e) { alert("删除失败"); }
+    } catch (e) {
+        alert("删除失败");
+    }
 }
 
 async function cloneTask(taskId) {
     if (!confirm("确定要克隆这个任务吗？")) return;
     try {
-        var resp = await fetch("/api/tasks/" + taskId + "/clone", { method: "POST" });
-        if (!resp.ok) { var err = await resp.json(); alert(err.error || "克隆失败"); return; }
+        var resp = await fetch("/api/tasks/" + taskId + "/clone", {
+            method: "POST",
+        });
+        if (!resp.ok) {
+            var err = await resp.json();
+            alert(err.error || "克隆失败");
+            return;
+        }
         window.loadTasks();
-    } catch (e) { alert("克隆请求失败"); }
+    } catch (e) {
+        alert("克隆请求失败");
+    }
 }
 
 // ---- Preview & Submit ----
@@ -114,7 +145,9 @@ async function previewCommand(data) {
         if (!resp.ok) return null;
         var result = await resp.json();
         return result.commands || [];
-    } catch (e) { return null; }
+    } catch (e) {
+        return null;
+    }
 }
 
 function initLocalFormSubmit() {
@@ -129,7 +162,14 @@ function initLocalFormSubmit() {
             formErrors.textContent = "无法生成预览命令，请检查配置";
             return;
         }
-        if (!confirm("即将执行的命令：\n\n" + commands.join("\n\n") + "\n\n确认保存？")) return;
+        if (
+            !confirm(
+                "即将执行的命令：\n\n" +
+                    commands.join("\n\n") +
+                    "\n\n确认保存？",
+            )
+        )
+            return;
 
         try {
             var resp;
@@ -148,11 +188,15 @@ function initLocalFormSubmit() {
             }
             if (!resp.ok) {
                 var err = await resp.json();
-                formErrors.textContent = Array.isArray(err.error) ? err.error.join("\n") : (err.error || "保存失败");
+                formErrors.textContent = Array.isArray(err.error)
+                    ? err.error.join("\n")
+                    : err.error || "保存失败";
                 return;
             }
             closeModal();
             window.loadTasks();
-        } catch (e) { formErrors.textContent = "网络错误"; }
+        } catch (e) {
+            formErrors.textContent = "网络错误";
+        }
     });
 }

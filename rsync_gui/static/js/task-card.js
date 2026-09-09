@@ -18,6 +18,7 @@ function renderTaskCard(t, isRemote, isRclone) {
             ? "失败"
             : "待执行";
     var hasCron = t.cron_expr ? "cron" : "";
+    var hasDryRun = !!t.dry_run;
 
     var editFn, cloneFn, delFn, runFn, logFn, logArgs, badgeTag;
 
@@ -36,10 +37,11 @@ function renderTaskCard(t, isRemote, isRclone) {
         runFn = "runRemoteTask(" + t.id + ")";
         logFn = "showLogModal";
         logArgs = t.id + ",true,false";
-        badgeTag =
-            '<span class="task-badge cron">' +
-            escHtml(t.ssh_host || "") +
-            "</span>";
+        badgeTag = t.ssh_host
+            ? '<span class="task-badge remote-host">' +
+              escHtml(t.ssh_host) +
+              "</span>"
+            : "";
     } else {
         editFn = "editTask(" + t.id + ")";
         cloneFn = "cloneTask(" + t.id + ")";
@@ -80,6 +82,7 @@ function renderTaskCard(t, isRemote, isRclone) {
         statusLabel +
         "</span>" +
         (hasCron ? '<span class="task-badge cron">定时</span>' : "") +
+        (hasDryRun ? '<span class="task-badge dry-run">演习</span>' : "") +
         badgeTag +
         "</div>" +
         '<div class="task-card-right">' +

@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 # rsync         -> 本地同步任务
 # openssh-client-> 远程任务通过 SSH 执行 rsync

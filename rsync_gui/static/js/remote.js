@@ -49,7 +49,7 @@ function openRemoteModal(title, taskData) {
         document.getElementById("remote-delete_mode").checked = true;
         document.getElementById("remote-dry_run").checked = true;
         document.getElementById("remote-excludes").value =
-            ".Trash-*\n.DS_Store";
+            ".Trash-*\n.DS_Store\nvenv\n.venv\nnode_modules\n__pycache__\n.git";
     }
 
     remoteModalOverlay.style.display = "flex";

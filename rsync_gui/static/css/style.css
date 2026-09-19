@@ -152,6 +152,18 @@ body {
     min-width: 0;
 }
 
+.task-section {
+    display: none;
+}
+
+.task-section.active {
+    display: block;
+}
+
+.task-section + .task-section {
+    margin-top: 24px;
+}
+
 .panel-bar {
     display: flex;
     align-items: center;

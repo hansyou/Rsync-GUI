@@ -10,8 +10,9 @@ from .rsync_worker import _log_key, _running_procs, save_log_to_disk, task_logs
 
 
 def build_rclone_cmd(task):
-    """构建 rclone sync 命令"""
-    cmd = ["rclone", "sync", "--progress", "--transfers", "4", "--checkers", "4"]
+    """构建 rclone 命令"""
+    action = "sync" if task.get("delete_mode", 1) else "copy"
+    cmd = ["rclone", action, "--progress", "--transfers", "4", "--checkers", "4"]
 
     if task.get("excludes"):
         for line in task["excludes"].split("\n"):
@@ -21,6 +22,12 @@ def build_rclone_cmd(task):
 
     if task.get("dry_run"):
         cmd.append("--dry-run")
+
+    if task.get("max_duration"):
+        cmd.extend(["--max-duration", task["max_duration"]])
+
+    if task.get("max_size"):
+        cmd.extend(["--max-size", task["max_size"]])
 
     return cmd
 

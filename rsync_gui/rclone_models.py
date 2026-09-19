@@ -33,9 +33,14 @@ def init_db():
                 targets TEXT NOT NULL,       -- JSON 数组
 
                 -- rclone 选项
-                dry_run  BOOLEAN DEFAULT 1,
+                dry_run      BOOLEAN DEFAULT 1,
+                delete_mode  BOOLEAN DEFAULT 1,
 
                 excludes   TEXT,              -- 换行分隔，对应 --exclude
+
+                -- 传输限制
+                max_duration TEXT,            -- 最长传输时间，如 30m, 1h
+                max_size     TEXT,            -- 最大文件大小，如 500M, 1G
 
                 cron_expr        TEXT,
 
@@ -55,6 +60,18 @@ def migrate_db():
         if "sort_order" not in columns:
             conn.execute(
                 "ALTER TABLE rclone_tasks ADD COLUMN sort_order REAL NOT NULL DEFAULT 0"
+            )
+        if "max_duration" not in columns:
+            conn.execute(
+                "ALTER TABLE rclone_tasks ADD COLUMN max_duration TEXT"
+            )
+        if "max_size" not in columns:
+            conn.execute(
+                "ALTER TABLE rclone_tasks ADD COLUMN max_size TEXT"
+            )
+        if "delete_mode" not in columns:
+            conn.execute(
+                "ALTER TABLE rclone_tasks ADD COLUMN delete_mode BOOLEAN DEFAULT 1"
             )
 
 
@@ -84,15 +101,18 @@ def create_task(data):
 
         cur = conn.execute(
             """
-            INSERT INTO rclone_tasks (name, source, targets, dry_run, excludes, cron_expr, sort_order)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO rclone_tasks (name, source, targets, dry_run, delete_mode, excludes, max_duration, max_size, cron_expr, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 data["name"],
                 data["source"],
                 data["targets"],
                 int(data.get("dry_run", 1)),
+                int(data.get("delete_mode", 1)),
                 data.get("excludes", ""),
+                data.get("max_duration", ""),
+                data.get("max_size", ""),
                 data.get("cron_expr", ""),
                 new_order,
             ),
@@ -105,7 +125,7 @@ def update_task(task_id, data):
         conn.execute(
             """
             UPDATE rclone_tasks SET
-                name=?, source=?, targets=?, dry_run=?, excludes=?, cron_expr=?,
+                name=?, source=?, targets=?, dry_run=?, delete_mode=?, excludes=?, max_duration=?, max_size=?, cron_expr=?,
                 updated_at=CURRENT_TIMESTAMP
             WHERE id=?
             """,
@@ -114,7 +134,10 @@ def update_task(task_id, data):
                 data["source"],
                 data["targets"],
                 int(data.get("dry_run", 1)),
+                int(data.get("delete_mode", 1)),
                 data.get("excludes", ""),
+                data.get("max_duration", ""),
+                data.get("max_size", ""),
                 data.get("cron_expr", ""),
                 task_id,
             ),

@@ -19,6 +19,9 @@ function renderTaskCard(t, isRemote, isRclone) {
             : "待执行";
     var hasCron = t.cron_expr ? "cron" : "";
     var hasDryRun = !!t.dry_run;
+    var isCopyMode = isRclone && !t.delete_mode;
+    var hasMaxDuration = t.max_duration && t.max_duration.trim() !== "";
+    var hasMaxSize = t.max_size && t.max_size.trim() !== "";
 
     var editFn, cloneFn, delFn, runFn, logFn, logArgs, badgeTag;
 
@@ -83,6 +86,9 @@ function renderTaskCard(t, isRemote, isRclone) {
         "</span>" +
         (hasCron ? '<span class="task-badge cron">定时</span>' : "") +
         (hasDryRun ? '<span class="task-badge dry-run">演习</span>' : "") +
+        (isCopyMode ? '<span class="task-badge copy-mode">仅复制</span>' : "") +
+        (hasMaxDuration ? '<span class="task-badge max-duration">限时' + escHtml(t.max_duration) + '</span>' : "") +
+        (hasMaxSize ? '<span class="task-badge max-size">限大' + escHtml(t.max_size) + '</span>' : "") +
         badgeTag +
         "</div>" +
         '<div class="task-card-right">' +

@@ -117,6 +117,21 @@
     color: #1e40af;
 }
 
+.task-badge.copy-mode {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.task-badge.max-duration {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.task-badge.max-size {
+    background: #fce7f3;
+    color: #9d174d;
+}
+
 .task-badge.remote-host {
     background: #e0e7ff;
     color: #3730a3;

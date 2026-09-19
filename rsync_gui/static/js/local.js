@@ -42,7 +42,7 @@ function openModal(title, taskData) {
         document.getElementById("compress").checked = false;
         document.getElementById("delete_mode").checked = true;
         document.getElementById("dry_run").checked = true;
-        document.getElementById("excludes").value = ".Trash-*\n.DS_Store";
+        document.getElementById("excludes").value = ".Trash-*\n.DS_Store\nvenv\n.venv\nnode_modules\n__pycache__\n.git";
     }
 
     modalOverlay.style.display = "flex";

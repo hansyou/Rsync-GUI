@@ -60,9 +60,37 @@ async function loadTasks() {
         renderTasks();
         renderRemoteTasks();
         renderRcloneTasks();
+        updateLayout();
     } catch (e) {
         console.error("加载任务失败", e);
     }
+}
+
+function updateLayout() {
+    var counts = [
+        { id: "section-local", count: tasks.length },
+        { id: "section-remote", count: remoteTasks.length },
+        { id: "section-rclone", count: rcloneTasks.length },
+    ];
+    counts.sort(function (a, b) { return b.count - a.count; });
+
+    var leftPanel = document.getElementById("split-left");
+    var rightPanel = document.getElementById("split-right");
+
+    var leftSection = document.getElementById(counts[0].id);
+    var rightSection1 = document.getElementById(counts[1].id);
+    var rightSection2 = document.getElementById(counts[2].id);
+
+    leftSection.classList.add("active");
+    rightSection1.classList.add("active");
+    rightSection2.classList.add("active");
+
+    leftPanel.innerHTML = "";
+    rightPanel.innerHTML = "";
+
+    leftPanel.appendChild(leftSection);
+    rightPanel.appendChild(rightSection1);
+    rightPanel.appendChild(rightSection2);
 }
 
 function renderTasks() {

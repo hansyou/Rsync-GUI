@@ -19,7 +19,7 @@
         <header class="app-header">
             <div class="header-inner">
                 <div class="app-title">
-                    Rsync-GUI<span class="app-version">v0.1.4</span
+                    Rsync-GUI<span class="app-version">v0.1.5</span
                     ><span>备份任务管理</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px">
@@ -34,8 +34,11 @@
         </header>
 
         <main class="main-content main-split">
-            <!-- 左侧：本地任务 -->
-            <div class="split-panel">
+            <div id="split-left" class="split-panel"></div>
+            <div id="split-right" class="split-panel"></div>
+
+            <!-- 本地任务 -->
+            <div id="section-local" class="task-section">
                 <div class="panel-bar">
                     <span class="section-label">本地任务</span>
                     <button class="btn-primary" onclick="newTask()">
@@ -48,8 +51,8 @@
                 <div id="task-list" class="task-list"></div>
             </div>
 
-            <!-- 右侧：远程 + 网盘 -->
-            <div class="split-panel">
+            <!-- 远程任务 -->
+            <div id="section-remote" class="task-section">
                 <div class="panel-bar">
                     <span class="section-label">远程任务</span>
                     <button class="btn-primary" onclick="newRemoteTask()">
@@ -60,8 +63,11 @@
                     <p></p>还没有远程任务</p>
                 </div>
                 <div id="remote-task-list" class="task-list"></div>
+            </div>
 
-                <div class="panel-bar" style="margin-top: 24px">
+            <!-- 网盘任务 -->
+            <div id="section-rclone" class="task-section">
+                <div class="panel-bar">
                     <span class="section-label">网盘任务</span>
                     <button class="btn-primary" onclick="newRcloneTask()">
                         ＋ 新建
@@ -466,7 +472,14 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>rclone 选项</label>
+                            <label
+                                >rclone 选项
+                                <span
+                                    class="tip-icon"
+                                    title="同步删除：使用 sync 命令，目标端会删除源端不存在的文件&#10;不勾选：使用 copy 命令，仅复制/覆盖，不删除目标端文件"
+                                    >ⓘ</span
+                                >
+                            </label>
                             <div class="checkbox-group">
                                 <label
                                     ><input
@@ -475,6 +488,44 @@
                                         checked
                                     />演习模式</label
                                 >
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="rclone-delete_mode"
+                                        checked
+                                    />同步删除文件</label
+                                >
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>传输限制（可选）</label>
+                            <div class="checkbox-group">
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="rclone-max_duration-enabled"
+                                    />限制传输时间</label
+                                >
+                                <input
+                                    type="text"
+                                    id="rclone-max_duration"
+                                    placeholder="如 30m, 1h"
+                                    style="width: 100px"
+                                    disabled
+                                />
+                                <label
+                                    ><input
+                                        type="checkbox"
+                                        id="rclone-max_size-enabled"
+                                    />限制文件大小</label
+                                >
+                                <input
+                                    type="text"
+                                    id="rclone-max_size"
+                                    placeholder="如 500M, 1G"
+                                    style="width: 100px"
+                                    disabled
+                                />
                             </div>
                         </div>
                         <div class="form-group">

@@ -25,10 +25,33 @@ function openRcloneModal(title, taskData) {
         document.getElementById("rclone-excludes").value = taskData.excludes || "";
         document.getElementById("rclone-cron_expr").value = taskData.cron_expr || "";
         document.getElementById("rclone-dry_run").checked = taskData.dry_run !== 0;
+        document.getElementById("rclone-delete_mode").checked = taskData.delete_mode !== 0;
+        
+        // 处理 max_duration
+        var maxDurationEnabled = taskData.max_duration && taskData.max_duration.trim() !== "";
+        document.getElementById("rclone-max_duration-enabled").checked = maxDurationEnabled;
+        document.getElementById("rclone-max_duration").value = taskData.max_duration || "";
+        document.getElementById("rclone-max_duration").disabled = !maxDurationEnabled;
+        
+        // 处理 max_size
+        var maxSizeEnabled = taskData.max_size && taskData.max_size.trim() !== "";
+        document.getElementById("rclone-max_size-enabled").checked = maxSizeEnabled;
+        document.getElementById("rclone-max_size").value = taskData.max_size || "";
+        document.getElementById("rclone-max_size").disabled = !maxSizeEnabled;
     } else {
         document.getElementById("rclone-task-id").value = "";
         document.getElementById("rclone-dry_run").checked = true;
-        document.getElementById("rclone-excludes").value = ".Trash-*\n.DS_Store";
+        document.getElementById("rclone-delete_mode").checked = true;
+        document.getElementById("rclone-excludes").value = ".Trash-*\n.DS_Store\nvenv\n.venv\nnode_modules\n__pycache__\n.git";
+        
+        // 默认不勾选传输限制
+        document.getElementById("rclone-max_duration-enabled").checked = false;
+        document.getElementById("rclone-max_duration").value = "";
+        document.getElementById("rclone-max_duration").disabled = true;
+        
+        document.getElementById("rclone-max_size-enabled").checked = false;
+        document.getElementById("rclone-max_size").value = "";
+        document.getElementById("rclone-max_size").disabled = true;
     }
 
     rcloneModalOverlay.style.display = "flex";
@@ -40,12 +63,17 @@ function closeRcloneModal() {
 }
 
 function buildRcloneFormData() {
+    var maxDurationEnabled = document.getElementById("rclone-max_duration-enabled").checked;
+    var maxSizeEnabled = document.getElementById("rclone-max_size-enabled").checked;
     return {
         name: document.getElementById("rclone-name").value.trim(),
         source: document.getElementById("rclone-source").value.trim(),
         targets: formatTargetsForSubmit(document.getElementById("rclone-targets").value),
         dry_run: document.getElementById("rclone-dry_run").checked,
+        delete_mode: document.getElementById("rclone-delete_mode").checked,
         excludes: document.getElementById("rclone-excludes").value,
+        max_duration: maxDurationEnabled ? document.getElementById("rclone-max_duration").value.trim() : "",
+        max_size: maxSizeEnabled ? document.getElementById("rclone-max_size").value.trim() : "",
         cron_expr: document.getElementById("rclone-cron_expr").value.trim(),
     };
 }
@@ -101,6 +129,15 @@ async function previewRcloneCommand(data) {
 }
 
 function initRcloneFormSubmit() {
+    // 添加复选框事件监听器
+    document.getElementById("rclone-max_duration-enabled").addEventListener("change", function() {
+        document.getElementById("rclone-max_duration").disabled = !this.checked;
+    });
+    
+    document.getElementById("rclone-max_size-enabled").addEventListener("change", function() {
+        document.getElementById("rclone-max_size").disabled = !this.checked;
+    });
+    
     rcloneTaskForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         rcloneFormErrors.textContent = "";

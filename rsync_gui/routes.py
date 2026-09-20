@@ -12,6 +12,7 @@ from .rsync_worker import (
     load_log_from_disk,
     run_task_async,
     stop_task,
+    tail_log,
     task_logs,
 )
 from .scheduler import add_task_timer, remove_task_timer
@@ -203,7 +204,7 @@ def api_last_log(task_id):
     if log and log.get("output"):
         return jsonify(
             {
-                "output": log["output"],
+                "output": tail_log(log["output"]),
                 "started_at": log.get("started_at"),
             }
         )
@@ -213,7 +214,7 @@ def api_last_log(task_id):
     if disk_log:
         return jsonify(
             {
-                "output": disk_log.get("output", ""),
+                "output": tail_log(disk_log.get("output", "")),
                 "started_at": disk_log.get("started_at"),
             }
         )

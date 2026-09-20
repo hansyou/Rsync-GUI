@@ -60,6 +60,16 @@ def load_log_from_disk(task_id, remote=False, rclone=False):
     return None
 
 
+def tail_log(text, max_lines=200):
+    """只保留最后 max_lines 行日志"""
+    if not text:
+        return text
+    lines = text.split("\n")
+    if len(lines) <= max_lines:
+        return text
+    return "\n".join(lines[-max_lines:])
+
+
 def build_rsync_cmd(task, remote=False):
     """
     根据任务配置构建 rsync 命令参数列表。

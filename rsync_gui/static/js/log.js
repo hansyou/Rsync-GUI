@@ -29,12 +29,13 @@ async function showLogModal(taskId, isRemote, isRclone) {
           ? "/api/remote"
           : "/api/tasks";
 
+    // 切换任务时清空日志
     if (
         window.currentTaskId !== taskId ||
         window.currentIsRemote !== isRemote ||
         window.currentIsRclone !== isRclone
     ) {
-        logModalBody.textContent = "加载中...";
+        logModalBody.textContent = "";
         btnStopLog.style.display = "none";
     }
 
@@ -42,35 +43,30 @@ async function showLogModal(taskId, isRemote, isRclone) {
     window.currentIsRemote = !!isRemote;
     window.currentIsRclone = !!isRclone;
 
+    // 获取任务状态和开始时间
     try {
-        var resp = await fetch(prefix + "/" + taskId + "/last_log");
-        var data = await resp.json();
-        logModalBody.textContent = data.output || "暂无执行日志";
+        var resp = await fetch(prefix + "/" + taskId + "/status");
+        var status = await resp.json();
 
-        if (data.started_at) {
-            var d = new Date(data.started_at);
-            var pad = function (n) {
-                return String(n).padStart(2, "0");
-            };
-            var timeStr =
-                d.getFullYear() +
-                "-" +
-                pad(d.getMonth() + 1) +
-                "-" +
-                pad(d.getDate()) +
-                " " +
-                pad(d.getHours()) +
-                ":" +
-                pad(d.getMinutes()) +
-                ":" +
-                pad(d.getSeconds());
-            logModalTitle.textContent =
-                "执行日志 - " + (task ? task.name : "") + "（" + timeStr + "）";
+        var titleText = "执行日志 - " + (task ? task.name : "");
+        if (status.running) {
+            logModalTitle.textContent = titleText + "（执行中...）";
+            if (!logModalBody.textContent) {
+                logModalBody.textContent = "等待日志输出...\n";
+            }
+        } else if (status.exit_code !== null) {
+            var statusStr = status.exit_code === 0 ? "成功" : "失败(" + status.exit_code + ")";
+            logModalTitle.textContent = titleText + "（" + statusStr + "）";
+            if (!logModalBody.textContent) {
+                logModalBody.textContent = "任务未在运行";
+            }
         } else {
-            logModalTitle.textContent = "执行日志 - " + (task ? task.name : "");
+            logModalTitle.textContent = titleText;
+            if (!logModalBody.textContent) {
+                logModalBody.textContent = "暂无执行日志";
+            }
         }
     } catch (e) {
-        logModalBody.textContent = "加载日志失败";
         logModalTitle.textContent = "执行日志 - " + (task ? task.name : "");
     }
 
@@ -87,5 +83,11 @@ function closeLogModal() {
 
 function appendLogLine(line) {
     logModalBody.textContent += line;
+    // 只保留最后50行显示，避免刷屏
+    var text = logModalBody.textContent;
+    var lines = text.split("\n");
+    if (lines.length > 50) {
+        logModalBody.textContent = lines.slice(-50).join("\n");
+    }
     logModalBody.scrollTop = logModalBody.scrollHeight;
 }

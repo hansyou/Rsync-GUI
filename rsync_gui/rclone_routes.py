@@ -6,7 +6,7 @@ from flask import Blueprint, current_app, jsonify, request
 
 from . import rclone_models as models
 from .rclone_worker import build_rclone_cmd, run_task_async, stop_task
-from .rsync_worker import _log_key, load_log_from_disk, task_logs
+from .rsync_worker import _log_key, load_log_from_disk, tail_log, task_logs
 from .scheduler import add_task_timer, remove_task_timer
 
 rclone_bp = Blueprint("rclone", __name__)
@@ -147,12 +147,12 @@ def api_task_status(task_id):
 def api_last_log(task_id):
     log = task_logs.get(_log_key(task_id, rclone=True))
     if log and log.get("output"):
-        return jsonify({"output": log["output"], "started_at": log.get("started_at")})
+        return jsonify({"output": tail_log(log["output"]), "started_at": log.get("started_at")})
     disk_log = load_log_from_disk(task_id, rclone=True)
     if disk_log:
         return jsonify(
             {
-                "output": disk_log.get("output", ""),
+                "output": tail_log(disk_log.get("output", "")),
                 "started_at": disk_log.get("started_at"),
             }
         )

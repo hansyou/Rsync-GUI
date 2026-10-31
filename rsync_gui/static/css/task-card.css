@@ -1,4 +1,4 @@
-/* Rsync-GUI 任务卡片 */
+/* Rsync-GUI 任务卡片（液态玻璃） */
 
 /* ===== Task List ===== */
 
@@ -8,16 +8,22 @@
     gap: 12px;
 }
 
+/* 玻璃卡片：比面板更亮一档，hover 上浮 */
 .task-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.34));
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius);
     padding: 16px 20px;
-    transition: box-shadow 0.15s;
+    box-shadow: 0 2px 10px rgba(31, 41, 82, 0.06), var(--glass-highlight);
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
 }
 
 .task-card:hover {
-    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+    border-color: var(--glass-border-strong);
+    box-shadow: 0 14px 32px rgba(31, 41, 82, 0.14), var(--glass-highlight);
 }
 
 .task-card-header {
@@ -58,12 +64,13 @@
 /* Sortable ghost / dragging states */
 .task-card-ghost {
     opacity: 0.4;
-    background: var(--bg-secondary);
+    background: var(--glass-bg-soft);
 }
 
 .task-card-dragging {
-    box-shadow: var(--shadow-md);
-    opacity: 0.9;
+    box-shadow: var(--glass-shadow-lg);
+    opacity: 0.95;
+    transform: scale(1.015);
 }
 
 .task-name {
@@ -79,62 +86,76 @@
     color: var(--primary);
 }
 
+/* 彩色半透明玻璃徽章 */
 .task-badge {
     font-size: 11px;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 12px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: var(--radius-btn);
     white-space: nowrap;
+    border: 1px solid transparent;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
 }
 
 .task-badge.running {
-    background: #dbeafe;
-    color: var(--primary);
+    background: rgba(37, 99, 235, 0.13);
+    color: #1d4ed8;
+    border-color: rgba(37, 99, 235, 0.22);
 }
 
 .task-badge.success {
-    background: #dcfce7;
-    color: var(--success);
+    background: rgba(22, 163, 74, 0.13);
+    color: #15803d;
+    border-color: rgba(22, 163, 74, 0.22);
 }
 
 .task-badge.failed {
-    background: #fef2f2;
-    color: var(--danger);
+    background: rgba(220, 38, 38, 0.12);
+    color: var(--danger-hover);
+    border-color: rgba(220, 38, 38, 0.2);
 }
 
 .task-badge.idle {
-    background: var(--bg-secondary);
-    color: var(--text-muted);
+    background: rgba(100, 116, 139, 0.12);
+    color: var(--text-secondary);
+    border-color: rgba(100, 116, 139, 0.18);
 }
 
 .task-badge.cron {
-    background: #fef3c7;
+    background: rgba(217, 119, 6, 0.14);
     color: #92400e;
+    border-color: rgba(217, 119, 6, 0.22);
 }
 
 .task-badge.dry-run {
-    background: #dbeafe;
+    background: rgba(37, 99, 235, 0.12);
     color: #1e40af;
+    border-color: rgba(37, 99, 235, 0.2);
 }
 
 .task-badge.copy-mode {
-    background: #e0e7ff;
-    color: #3730a3;
+    background: rgba(109, 40, 217, 0.12);
+    color: #5b21b6;
+    border-color: rgba(109, 40, 217, 0.2);
 }
 
 .task-badge.max-duration {
-    background: #fef3c7;
+    background: rgba(217, 119, 6, 0.14);
     color: #92400e;
+    border-color: rgba(217, 119, 6, 0.22);
 }
 
 .task-badge.max-size {
-    background: #fce7f3;
+    background: rgba(219, 39, 119, 0.12);
     color: #9d174d;
+    border-color: rgba(219, 39, 119, 0.2);
 }
 
 .task-badge.remote-host {
-    background: #e0e7ff;
-    color: #3730a3;
+    background: rgba(109, 40, 217, 0.12);
+    color: #5b21b6;
+    border-color: rgba(109, 40, 217, 0.2);
 }
 
 .task-card-right {
@@ -151,6 +172,20 @@
     display: inline-block;
 }
 
+/* 菜单打开时提升卡片层级：
+   .task-card 的 backdrop-filter 会创建层叠上下文，
+   下拉菜单的 z-index 无法越过后面的兄弟卡片，需提升整个卡片 */
+.task-card.menu-open {
+    position: relative;
+    z-index: 30;
+}
+
+/* 菜单可能溢出到相邻面板（移动端上下排列时尤甚），同步提升所属面板 */
+.task-section.active:has(.task-card.menu-open) {
+    position: relative;
+    z-index: 40;
+}
+
 .task-more-btn {
     cursor: pointer;
 }
@@ -159,20 +194,23 @@
     position: absolute;
     top: 100%;
     right: 0;
-    margin-top: 4px;
-    background: var(--bg);
-    border: 1px solid var(--border);
+    margin-top: 6px;
+    background: rgba(255, 255, 255, 0.72);
+    -webkit-backdrop-filter: var(--glass-blur-strong);
+    backdrop-filter: var(--glass-blur-strong);
+    border: 1px solid var(--glass-border-strong);
     border-radius: var(--radius);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--glass-shadow-lg), var(--glass-highlight);
     z-index: 100;
-    min-width: 100px;
+    min-width: 110px;
     overflow: hidden;
+    padding: 4px;
 }
 
 .task-more-item {
     display: block;
     width: 100%;
-    padding: 8px 16px;
+    padding: 8px 14px;
     border: none;
     background: transparent;
     color: var(--text);
@@ -180,11 +218,12 @@
     font-weight: 500;
     cursor: pointer;
     text-align: left;
+    border-radius: 10px;
     transition: background 0.12s;
 }
 
 .task-more-item:hover {
-    background: var(--bg-secondary);
+    background: rgba(37, 99, 235, 0.1);
 }
 
 .task-more-item-danger {
@@ -192,7 +231,7 @@
 }
 
 .task-more-item-danger:hover {
-    background: #fef2f2;
+    background: rgba(220, 38, 38, 0.12);
 }
 
 /* ===== Expanded Meta ===== */
@@ -200,7 +239,7 @@
 .task-card-meta {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--hairline);
     display: flex;
     flex-direction: column;
     gap: 4px;

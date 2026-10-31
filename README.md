@@ -1,6 +1,21 @@
 # Rsync-GUI
 
-轻量级 Web 界面，管理 rsync 备份任务。
+轻量级 Web 界面，管理 rsync / rclone 备份任务。
+
+## 功能
+
+- 创建、编辑、克隆、删除备份任务
+- 三类任务：本地同步、SSH 远程同步、rclone 网盘同步
+- 支持多个目标目录同步
+- 定时执行（cron 表达式）
+- WebSocket 实时日志推送
+- 手动执行 / 强制停止
+- 保存前预览 rsync 命令
+- 演习模式（--dry-run），新建任务默认开启
+- 排除规则（新建时默认填入 `.Trash-*` `.DS_Store`）
+- 任务列表备份与还原（JSON 格式，同时导出/导入本地、远程和网盘任务）
+
+![示例](rsync-gui.png)
 
 ## 快速开始
 
@@ -17,15 +32,18 @@ uv run main.py
 
 程序以当前用户权限运行。如需访问所有文件，建议以 root 启动。
 
+## 数据目录
+
+首次运行会自动在运行目录下创建 `data/` 存放数据库和日志：
+
+- `tasks.db` / `remote_tasks.db` / `rclone_tasks.db`：本地、远程、网盘三类任务配置
+- `logs/`：执行日志
+
+如需指定其他位置，设置环境变量 `RSYNC_GUI_DATA=/path/to/data`。
+
 ## 使用 Docker
 
-### 构建镜像
-
-需先按下方「打包为单文件」生成 `dist/rsync-gui`。
-
-```bash
-docker build -t hansyou/rsync-gui:latest .
-```
+使用 Docker Hub 镜像 `hansyou/rsync-gui:latest`（镜像构建方法见 [AGENTS.md](AGENTS.md)）。
 
 ### 运行容器
 
@@ -65,14 +83,18 @@ docker compose up -d
 # 浏览器访问 http://127.0.0.1:9765
 ```
 
-`docker compose down`（加 -v 会同时删除数据卷），停止容器
+`docker compose down`（加 -v 会同时删除数据卷），停止容器。
 
-rclone 的 remote 配置（`rclone.conf`）和缓存也存放在该数据卷内（`RCLONE_CONFIG` / `XDG_CACHE_HOME` 已指向 `/app/data`），首次使用前在容器内配置 remote：
+### 配置 rclone 网盘
+
+rclone 的 remote 配置（`rclone.conf`）和缓存存放在数据卷内（`RCLONE_CONFIG` / `XDG_CACHE_HOME` 已指向 `/app/data`），首次使用前在容器内配置 remote：
 
 ```bash
 docker exec -it rsync-gui rclone config
 # 或复用宿主机已有配置: docker cp rclone.conf rsync-gui:/app/data/rclone.conf
 ```
+
+### docker run
 
 不想用 compose 时，直接用 docker run：
 
@@ -91,44 +113,6 @@ docker run -d \
   hansyou/rsync-gui:latest
 ```
 
-## 功能
+## 开发与编译
 
-- 创建、编辑、克隆、删除备份任务
-- 支持多个目标目录同步
-- 定时执行（cron 表达式）
-- WebSocket 实时日志推送
-- 手动执行 / 强制停止
-- 保存前预览 rsync 命令
-
-![示例](rsync-gui.png)
-
-## 打包为单文件
-
-```bash
-uv run pyinstaller --onefile --name rsync-gui \
-    --collect-all flask \
-    --collect-all flask_socketio \
-    --collect-all socketio \
-    --collect-all engineio \
-    --collect-all apscheduler \
-    --collect-all jinja2 \
-    --collect-all markupsafe \
-    --collect-all itsdangerous \
-    --collect-all werkzeug \
-    --collect-all click \
-    --collect-all pytz \
-    --collect-all tzlocal \
-    --collect-all sqlalchemy \
-    --add-data rsync_gui/templates:rsync_gui/templates \
-    --add-data rsync_gui/static:rsync_gui/static \
-    main.py
-```
-
-生成的可执行文件位于 `dist/rsync-gui`，可在其他 Linux 设备上直接运行（需已安装 rsync）。
-
-首次运行会自动创建 `~/.rsync-gui/data/` 存放数据库和日志。
-
-## 依赖
-
-- Python >= 3.12
-- Flask, Flask-SocketIO, APScheduler
+开发环境搭建、打包单文件、Docker 镜像构建、发布清单等技术内容见 [AGENTS.md](AGENTS.md)。

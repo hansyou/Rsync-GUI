@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#eef2fd" />
         <title>Rsync-GUI</title>
         <link
             rel="icon"
@@ -19,12 +20,12 @@
         <header class="app-header">
             <div class="header-inner">
                 <div class="app-title">
-                    Rsync-GUI<span class="app-version">v0.1.6</span
+                    Rsync-GUI<span class="app-version">v0.2</span
                     ><span>备份任务管理</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px">
+                <div class="header-actions">
                     <button class="btn-secondary" onclick="exportAllTasks()">
-                        导入配置
+                        导出配置
                     </button>
                     <button class="btn-secondary" onclick="importAllTasks()">
                         还原配置
@@ -46,7 +47,7 @@
                     </button>
                 </div>
                 <div id="empty-state" class="empty-state">
-                    <p></p>还没有本地任务</p>
+                    <p>还没有本地任务</p>
                 </div>
                 <div id="task-list" class="task-list"></div>
             </div>
@@ -60,7 +61,7 @@
                     </button>
                 </div>
                 <div id="remote-empty-state" class="empty-state">
-                    <p></p>还没有远程任务</p>
+                    <p>还没有远程任务</p>
                 </div>
                 <div id="remote-task-list" class="task-list"></div>
             </div>
@@ -74,7 +75,7 @@
                     </button>
                 </div>
                 <div id="rclone-empty-state" class="empty-state">
-                    <p>还没有</p>网盘任务</p>
+                    <p>还没有网盘任务</p>
                 </div>
                 <div id="rclone-task-list" class="task-list"></div>
             </div>
@@ -573,23 +574,11 @@
             <div class="modal log-modal">
                 <div class="modal-header">
                     <h2 id="log-modal-title">执行日志</h2>
-                    <div style="display: flex; align-items: center; gap: 8px">
-                        <button
-                            id="btn-stop-log"
-                            class="btn-danger"
-                            style="
-                                display: none;
-                                padding: 4px 12px;
-                                font-size: 12px;
-                            "
-                        >
+                    <div class="log-header-actions">
+                        <button id="btn-stop-log" class="btn-danger btn-sm" style="display: none">
                             ■ 停止
                         </button>
-                        <button
-                            id="btn-clear-log"
-                            class="btn-secondary"
-                            style="padding: 4px 12px; font-size: 12px"
-                        >
+                        <button id="btn-clear-log" class="btn-secondary btn-sm">
                             清空
                         </button>
                         <button class="modal-close" onclick="closeLogModal()">

@@ -147,10 +147,14 @@ function toggleMoreMenu(event) {
 
     for (var i = 0; i < allMenus.length; i++) {
         allMenus[i].style.display = "none";
+        allMenus[i].closest(".task-card").classList.remove("menu-open");
     }
 
     if (!isCurrentlyOpen) {
         currentMenu.style.display = "block";
+        // 打开时提升卡片层级：卡片的 backdrop-filter 形成层叠上下文，
+        // 否则下拉菜单会被后面的卡片盖住
+        currentMenu.closest(".task-card").classList.add("menu-open");
     }
 }
 
@@ -160,6 +164,7 @@ document.addEventListener("click", function (event) {
         var allMenus = document.querySelectorAll(".task-more-menu");
         for (var i = 0; i < allMenus.length; i++) {
             allMenus[i].style.display = "none";
+            allMenus[i].closest(".task-card").classList.remove("menu-open");
         }
     }
 });

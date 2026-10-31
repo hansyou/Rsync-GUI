@@ -1,5 +1,14 @@
 FROM python:3.13-slim
 
+# apt 换中科大源（USTC），提升国内构建速度
+# 兼容两种源文件格式：Debian 12+ 的 /etc/apt/sources.list.d/debian.sources 与旧版 sources.list
+RUN for f in /etc/apt/sources.list.d/debian.sources /etc/apt/sources.list; do \
+        [ -f "$f" ] && sed -i \
+            -e 's|deb.debian.org|mirrors.ustc.edu.cn|g' \
+            -e 's|security.debian.org|mirrors.ustc.edu.cn|g' \
+            "$f" || true; \
+    done
+
 # rsync         -> 本地同步任务
 # openssh-client-> 远程任务通过 SSH 执行 rsync
 # curl          -> 健康检查

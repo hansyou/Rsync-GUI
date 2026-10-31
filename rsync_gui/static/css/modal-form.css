@@ -1,11 +1,13 @@
-/* Rsync-GUI 弹窗与表单 */
+/* Rsync-GUI 弹窗与表单（液态玻璃） */
 
 /* ===== Modal (shared overlay) ===== */
 
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(28, 34, 58, 0.26);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    backdrop-filter: blur(10px) saturate(140%);
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -13,14 +15,26 @@
     z-index: 100;
 }
 
+/* 强玻璃弹窗 */
 .modal {
-    background: var(--bg);
-    border-radius: 12px;
-    box-shadow: var(--shadow-md);
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: var(--glass-blur-strong);
+    backdrop-filter: var(--glass-blur-strong);
+    border: 1px solid var(--glass-border-strong);
+    border-radius: 22px;
+    box-shadow: var(--glass-shadow-lg), var(--glass-highlight);
     width: 700px;
     max-width: calc(100vw - 48px);
     max-height: calc(100vh - 80px);
     overflow-y: auto;
+    animation: modal-in 0.22s ease-out;
+}
+
+@keyframes modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
 }
 
 .modal-header {
@@ -32,20 +46,24 @@
 
 .modal-header h2 {
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: -0.2px;
 }
 
 .modal-close {
-    background: none;
-    border: none;
-    font-size: 22px;
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-btn);
+    font-size: 20px;
     cursor: pointer;
-    color: var(--text-muted);
-    padding: 4px;
-    line-height: 1;
+    color: var(--text-secondary);
+    padding: 2px 10px;
+    line-height: 1.4;
+    transition: background 0.15s, color 0.15s;
 }
 
 .modal-close:hover {
+    background: rgba(255, 255, 255, 0.65);
     color: var(--text);
 }
 
@@ -55,7 +73,7 @@
 
 .modal-footer {
     padding: 16px 24px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--hairline);
     display: flex;
     justify-content: flex-end;
     gap: 8px;
@@ -97,18 +115,27 @@
     grid-template-columns: 1fr 1fr 1fr;
 }
 
+/* 内凹玻璃输入框 */
 input[type="text"],
 input[type="number"],
 select,
 textarea {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--glass-border-strong);
     border-radius: var(--radius);
     font-size: 14px;
     color: var(--text);
-    background: var(--bg);
-    transition: border-color 0.15s;
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 1px 2px rgba(31, 41, 82, 0.06);
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+input[type="text"]:hover,
+input[type="number"]:hover,
+select:hover,
+textarea:hover {
+    background: rgba(255, 255, 255, 0.65);
 }
 
 input[type="text"]:focus,
@@ -116,8 +143,9 @@ input[type="number"]:focus,
 select:focus,
 textarea:focus {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: rgba(37, 99, 235, 0.6);
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14), inset 0 1px 2px rgba(31, 41, 82, 0.06);
 }
 
 textarea {
@@ -132,6 +160,7 @@ textarea {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
+    align-items: center;
 }
 
 .checkbox-group label {

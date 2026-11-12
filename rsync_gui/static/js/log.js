@@ -43,7 +43,7 @@ async function showLogModal(taskId, isRemote, isRclone) {
     window.currentIsRemote = !!isRemote;
     window.currentIsRclone = !!isRclone;
 
-    // 获取任务状态和开始时间
+    // 获取任务状态；未运行时加载上次执行日志（内存优先，磁盘兜底）
     try {
         var resp = await fetch(prefix + "/" + taskId + "/status");
         var status = await resp.json();
@@ -54,14 +54,17 @@ async function showLogModal(taskId, isRemote, isRclone) {
             if (!logModalBody.textContent) {
                 logModalBody.textContent = "等待日志输出...\n";
             }
-        } else if (status.exit_code !== null) {
-            var statusStr = status.exit_code === 0 ? "成功" : "失败(" + status.exit_code + ")";
-            logModalTitle.textContent = titleText + "（" + statusStr + "）";
-            if (!logModalBody.textContent) {
-                logModalBody.textContent = "任务未在运行";
-            }
         } else {
-            logModalTitle.textContent = titleText;
+            var lastLog = await loadLastLog(prefix, taskId);
+            var when = lastLog && lastLog.started_at ? " " + lastLog.started_at : "";
+            if (status.exit_code !== null) {
+                var statusStr =
+                    status.exit_code === 0 ? "成功" : "失败(" + status.exit_code + ")";
+                logModalTitle.textContent = titleText + "（" + statusStr + when + "）";
+            } else {
+                logModalTitle.textContent =
+                    titleText + (when ? "（上次执行" + when + "）" : "");
+            }
             if (!logModalBody.textContent) {
                 logModalBody.textContent = "暂无执行日志";
             }
@@ -79,6 +82,22 @@ function closeLogModal() {
     window.currentTaskId = null;
     window.currentIsRemote = false;
     window.currentIsRclone = false;
+}
+
+// 加载上次执行日志：接口优先返回内存日志，服务重启后从磁盘日志兜底
+async function loadLastLog(prefix, taskId) {
+    try {
+        var resp = await fetch(prefix + "/" + taskId + "/last_log");
+        if (!resp.ok) return null;
+        var data = await resp.json();
+        if (data && data.output) {
+            logModalBody.textContent = data.output;
+            logModalBody.scrollTop = logModalBody.scrollHeight;
+        }
+        return data;
+    } catch (e) {
+        return null;
+    }
 }
 
 function appendLogLine(line) {

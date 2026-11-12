@@ -74,7 +74,7 @@ systemd/    # rsync-gui.service（systemd 部署示例）
   ```
 - 任务卡片 HTML 由 `task-card.js:renderTaskCard(t, remote, rclone)` **字符串拼接**生成：
   改 UI 时要同步修改这里的 HTML 字符串（badge、按钮、下拉菜单等都在其中）。
-- 其余 js：`local.js` / `remote.js` / `rclone.js` 各自负责三类任务的表单弹窗与 API 调用；`log.js` 日志弹窗 + WebSocket 订阅；`backup.js` 导入导出；`utils.js` 转义等工具。
+- 其余 js：`local.js` / `remote.js` / `rclone.js` 各自负责三类任务的表单弹窗与 API 调用；`log.js` 日志弹窗 + WebSocket 订阅（任务未运行时经 `/last_log` 加载上次执行日志，内存优先、磁盘兜底，`showLogModal` 内处理）；`backup.js` 导入导出；`utils.js` 转义等工具。
 - 外部 CDN 依赖：`socket.io 4.7.5`、`sortablejs 1.15.3`（卡片拖拽排序，handle 为 `.task-drag-handle`）。
 - 卡片操作收敛为「执行」+「其他」下拉（日志/编辑/克隆/删除），删除/克隆用 `confirm()` 二次确认。
 
